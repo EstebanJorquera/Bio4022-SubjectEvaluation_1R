@@ -1,0 +1,141 @@
+---
+title: "Delphinidae Observation Data (SubjectEvaluation_1R)"
+author: "Esteban Jorquera"
+date: "13/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+###Rmd setup
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries}
+###load libraries
+library(tidyverse)#base library
+library(dismo)#gets animal observation data
+library(knitr)#graphic tools for Rmarkdown (allows kable)
+library(leaflet)#graphic tools for maps
+```
+
+```{r Delphinidae data}
+###gets Delphinidae data
+
+#gets all data of the Orcinus genus
+#Orcinus_Data <- gbif('Orcinus','*', down=TRUE)
+
+#Code below is more...thorough... much better than doing several small data frames for each genus and then join them, although slower, but also future proof, should a new species be described.
+
+#gets Delphinidae species, if I understood correctly the example
+Delphinidae <- name_suggest(
+  q = "Delphinidae",
+  rank = "family"
+)
+
+year <- "2015,2019"
+
+#gets the number of Delphinidae observations, under filter conditions since the limit is 250000; which will indicate an error but not report it to you, also trying to keep the number below 101000 items to download, mainly due to GBIF download limits, and time
+Delphinidae_count <- occ_search(
+  taxonKey = Delphinidae$key,
+  basisOfRecord = "HUMAN_OBSERVATION",
+  hasCoordinate = TRUE,
+  year = year,
+  return = "meta"
+)$count
+
+#Uses previous data and makes a data frame, also sets a limit to observations, otherwise it is set automatically to 500, ignoring data
+Delphinidae_Data <- occ_search(
+  taxonKey = Delphinidae$key,
+  basisOfRecord = "HUMAN_OBSERVATION",
+  hasCoordinate = TRUE,
+  year = year,
+  limit = Delphinidae_count,
+  return = 'data'
+)
+
+```
+
+```{r Data filtering}
+
+###Selects species, record type, and geographical data (longitude, latitude)
+###then removes data with non available longitude, latitude and non available genus or species keys
+Delphinidae_Loc <- Delphinidae_Data %>%
+  dplyr::select(
+    genericName,
+    genus,
+    species,
+    scientificName,
+    decimalLongitude, 
+    decimalLatitude
+  ) %>% 
+  filter( #should be redundant
+    !is.na(decimalLongitude) &
+    !is.na(decimalLatitude) &
+    !is.na(genus)
+  )
+
+Delphinidae_Species <- Delphinidae_Loc %>% 
+  group_by(genericName) %>%
+  summarise(N=n()
+  )
+
+kable(Delphinidae_Species)
+```
+
+```{r Data mapping}
+pal <- colorFactor(
+  c(
+    "red",
+    "blue",
+    "pink",
+    "yellow",
+    "purple",
+    "cyan",
+    "brown",
+    "white",
+    "grey",
+    "black",
+    "salmon",
+    "lightblue",
+    "darkred",
+    "green",
+    "darkgreen",
+    "orange",
+    "navy"
+    ),
+  domain = c(
+    "Cephalorhynchus",
+    "Delphinus",
+    "Feresa",
+    "Globicephala",
+    "Grampus",
+    "Lagenodelphis",
+    "Lagenorhynchus",
+    "Lissodelphis",
+    "Orcaella",
+    "Orcinus",
+    "Peponocephala",
+    "Pseudorca",
+    "Sotalia",
+    "Sousa",
+    "Stenella",
+    "Steno",
+    "Tursiops"
+    )
+)
+
+leaflet(data = Delphinidae_Loc) %>%
+  addProviderTiles("OpenTopoMap") %>%
+  setView(-99, 19, zoom = 4) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~decimalLongitude,
+    ~decimalLatitude,
+    label = ~as.character(genericName),
+    fillOpacity = 0.5,
+    radius = 5,
+    color = ~pal(genericName),
+    stroke = FALSE,
+    #clusterOptions = markerClusterOptions()
+  )
+```
