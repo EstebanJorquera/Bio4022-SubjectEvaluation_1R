@@ -17,6 +17,7 @@ knitr::opts_chunk$set(warning=FALSE)
 library(tidyverse)#base library
 library(dismo)#gets animal observation data
 library(knitr)#graphic tools for Rmarkdown (allows kable)
+library(kableExtra)#extra tools for kable
 library(leaflet)#graphic tools for maps
 library(rgbif)#search tools for gbif
 ```
@@ -24,7 +25,7 @@ library(rgbif)#search tools for gbif
 ```{r Values}
 curr_Year <- format(Sys.Date(), "%Y")
 
-occ_Limit <- 5000 #100000 #less than 101000
+occ_Limit <- 100000 #less than 101000; 5000 is good for testing
 
 names_months <- c(
   "Jan","Feb","Mar","Apr","May","Jun",
@@ -40,7 +41,7 @@ pal <- colorFactor(
     "purple",
     "cyan",
     "brown",
-    "white",
+    "lightgrey",
     "grey",
     "black",
     "salmon",
@@ -196,7 +197,7 @@ Delphinidae_Loc <- Delphinidae_Data %>%
     decimalLongitude, 
     decimalLatitude
   ) %>% 
-  filter( #should be redundant
+  filter( #should be mostly redundant
     !is.na(decimalLongitude) &
       !is.na(decimalLatitude) &
       !is.na(genus) &
@@ -209,7 +210,6 @@ Delphinidae_Species <- Delphinidae_Loc %>%
     Occurrences=n()
   ) %>% 
   rename(
-    #Genus = genus,
     Species = specificEpithet
   )
 
@@ -228,23 +228,53 @@ Human wildlife observations registered `r ifelse(year_to != year_from,{paste ("f
 
 Of the recorded observations, the most common genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`*, specifically to the *`r Delphinidae_Species %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`* species. Conversely the less commonly seen genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == min(Occurrences)) %>%  subset(select = -Occurrences)`*.
 
-```{r Data tables, fig.align="center", fig.width=6, fig.height=6, fig.cap="Table 1. Observation data of members of the Delphinidae family obtained from the Global Biodiversity Information Facility, corresponding to the analysed period, depicting the number of occurrences per species."}
+```{r Data tables, results='asis'}
+
+Delphinidae_Table <- Delphinidae_Loc %>%
+  group_by(genus,specificEpithet) %>%
+  summarise(
+    occurrences=n()
+  ) %>% 
+  mutate(
+    Genus = cell_spec(
+      genus,
+      "html",
+      color = "white",
+      italic = TRUE,
+      background = pal(genus)
+    )
+  ) %>% 
+  mutate(
+    Species = cell_spec(
+      specificEpithet,
+      "html",
+      color = "black",
+      italic = TRUE
+      )
+  ) %>% 
+  mutate(
+    Occurrences = occurrences
+  ) %>%
+  ungroup() %>% 
+  dplyr::select(-genus,-specificEpithet,-occurrences)
 
 kable(
-  Delphinidae_Loc %>%
-    group_by(genus,specificEpithet) %>%
-    summarise(
-      Occurrences=n()
-    ) %>% 
-    rename(
-      Genus = genus,
-      Species = specificEpithet
+  Delphinidae_Table,
+  format = "html",
+  escape = FALSE,
+  caption = "Table 1. Observation data of members of the Delphinidae family obtained from the Global Biodiversity Information Facility, corresponding to the analysed period, depicting the number of occurrences per species. Species are grouped by genera utilising the same color palette used in all figures"
+) %>%
+  kable_styling(
+    full_width = TRUE,
+    bootstrap_options = c(
+      "striped",
+      "hover"
     )
-)
+  )
 
 ```
 
-```{r Data plots, fig.align="center", fig.width=6, fig.height=6, fig.cap="Figure 1. Observation data of members of the Delphinidae family grouped by genera, obtained from the Global Biodiversity Information Facility, corresponding to each year of the analysed period."}
+```{r Data plots, fig.align="center", fig.width=12, fig.height=6, fig.cap="Figure 1. Observation data of members of the Delphinidae family grouped by genera, obtained from the Global Biodiversity Information Facility, corresponding to each year of the analysed period.Genera are colorized utilising the same color palette used in all figures"}
 
 Delphinidae_Observations <- Delphinidae_Data %>% 
   group_by(genus,month,year) %>%
@@ -301,7 +331,7 @@ ggplot(
       "Grampus" = "purple",
       "Lagenodelphis" = "cyan",
       "Lagenorhynchus" = "brown",
-      "Lissodelphis" = "white",
+      "Lissodelphis" = "lightgrey",
       "Orcaella" = "grey",
       "Orcinus" = "black",
       "Peponocephala" = "salmon",
@@ -338,7 +368,7 @@ ggplot(
 ```
 
 
-```{r Data mapping, fig.align="center", fig.width=6, fig.height=6, fig.cap="Figure 2. Location data of members of the Delphinidae family grouped by genera, obtained from the Global Biodiversity Information Facility,corresponding to the analysed period."}
+```{r Data mapping, fig.align="center", fig.width=9, fig.height=6, fig.cap="Figure 2. Location data the Delphinidae family species grouped by genera, obtained from the Global Biodiversity Information Facility,corresponding to the analysed period.Species are grouped by genera utilising the same color palette used in all figures"}
 
 leaflet(data = Delphinidae_Loc) %>%
   addProviderTiles("OpenTopoMap") %>%
@@ -347,7 +377,7 @@ leaflet(data = Delphinidae_Loc) %>%
   addCircleMarkers(
     ~decimalLongitude,
     ~decimalLatitude,
-    label = ~as.character(genericName),
+    label = ~paste(as.character(genus),as.character(specificEpithet)),
     fillOpacity = 0.6,
     radius = 5,
     color = ~pal(genericName),
