@@ -224,17 +224,12 @@ Delphinidae_Genus <- Delphinidae_Loc %>%
 
 ```
 
-<<<<<<< HEAD
 Human wildlife observations registered `r ifelse(year_to != year_from,{paste ("from",as.numeric(year_from),"to",as.numeric(year_to))},{paste("since",as.numeric(year_to))})` have produced `r dplyr::count(Delphinidae_Data)` observations of members of the *Delphinidae* family, registering locational ocurrence data for `r dplyr::count(summarise(group_by(Delphinidae_Data,speciesKey)))` species, between `r dplyr::count(Delphinidae_Genus)` genera.
-=======
-Human wildlife observations registered `r ifelse(year_to != year_from,{paste ("from",as.numeric(year_from),"to",as.numeric(year_to))},{paste("since",as.numeric(year_to))})` have produced `r dplyr::count(Delphinidae_Data)` observations of members of the *Delphinidae* family, registering locational ocurrence data for `r dplyr::count(summarise(group_by(Delphinidae_Data,speciesKey)))` species, between `r dplyr::count(Delphinidae_Species)` genera.
->>>>>>> 21ac64ada2de69ca80caaa69f79e8dd07e0b8ba8
 
 Of the recorded observations, the most common genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`*, specifically to the *`r Delphinidae_Species %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`* species. Conversely the less commonly seen genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == min(Occurrences)) %>%  subset(select = -Occurrences)`*.
 
 ```{r Data tables, results='asis'}
 
-<<<<<<< HEAD
 Delphinidae_Table <- Delphinidae_Loc %>%
   group_by(genus,specificEpithet) %>%
   summarise(
@@ -276,19 +271,6 @@ kable(
       "hover"
     )
   )
-=======
-kable(
-  Delphinidae_Loc %>%
-    group_by(genus,specificEpithet) %>%
-    summarise(
-      Occurrences=n()
-    ) %>% 
-    rename(
-      Genus = genus,
-      Species = specificEpithet
-    )
-)
->>>>>>> 21ac64ada2de69ca80caaa69f79e8dd07e0b8ba8
 
 ```
 
