@@ -348,7 +348,7 @@ leaflet(data = Delphinidae_Loc) %>%
     ~decimalLongitude,
     ~decimalLatitude,
     label = ~as.character(genericName),
-    fillOpacity = 0.5,
+    fillOpacity = 0.6,
     radius = 5,
     color = ~pal(genericName),
     stroke = FALSE,
