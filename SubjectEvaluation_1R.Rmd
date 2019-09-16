@@ -199,6 +199,7 @@ Delphinidae_Loc <- Delphinidae_Data %>%
   filter( #should be redundant
     !is.na(decimalLongitude) &
       !is.na(decimalLatitude) &
+<<<<<<< HEAD
       !is.na(genus) &
       !is.na(specificEpithet)
   )
@@ -217,6 +218,14 @@ Delphinidae_Genus <- Delphinidae_Loc %>%
   group_by(genus) %>%
   summarise(
     Occurrences=n()
+=======
+      !is.na(genus)
+  )
+
+Delphinidae_Species <- Delphinidae_Loc %>% 
+  group_by(genus) %>%
+  summarise(Ocurrences=n()
+>>>>>>> a74d3658fe516925f2c9a91a20fd379aafd5918f
   ) %>% 
   rename(
     Genus = genus
@@ -224,6 +233,7 @@ Delphinidae_Genus <- Delphinidae_Loc %>%
 
 ```
 
+<<<<<<< HEAD
 Human wildlife observations registered `r ifelse(year_to != year_from,{paste ("from",as.numeric(year_from),"to",as.numeric(year_to))},{paste("since",as.numeric(year_to))})` have produced `r dplyr::count(Delphinidae_Data)` observations of members of the *Delphinidae* family, registering locational ocurrence data for `r dplyr::count(summarise(group_by(Delphinidae_Data,speciesKey)))` species, between `r dplyr::count(Delphinidae_Species)` genera.
 
 Of the recorded observations, the most common genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`*, specifically to the *`r Delphinidae_Species %>% filter(Occurrences == max(Occurrences)) %>%  subset(select = -Occurrences)`* species. Conversely the less commonly seen genera corresponds to *`r Delphinidae_Genus %>% filter(Occurrences == min(Occurrences)) %>%  subset(select = -Occurrences)`*.
@@ -239,8 +249,103 @@ kable(
     rename(
       Genus = genus,
       Species = specificEpithet
+=======
+```{r Data plots}
+
+Delphinidae_Observations <- Delphinidae_Data %>% 
+  group_by(genus,month,year) %>%
+  summarise(Ocurrences=n()
+  ) %>% 
+  rename(
+    Genus = genus,
+    Year = year
+  ) %>% 
+  filter(
+    !is.na(Genus)
+  )
+
+Delphinidae_Observations$Month <- names_months[
+  Delphinidae_Observations$month
+  ]
+
+ggplot(
+  Delphinidae_Observations,
+  aes(
+    x = factor(
+      Month,
+      levels=c(
+        "Jan","Feb","Mar","Apr","May","Jun",
+        "Jul","Aug","Sep","Oct","Nov","Dec"
+      )
+    ),
+    #x = Month,
+    y = Ocurrences,
+    shape = Genus,
+    fill = Genus
+  )
+) +
+  geom_point() + 
+  #geom_smooth(    method = "lm",    formula = y ~ I(x^2) + x  ) +
+  facet_wrap(
+    ~Year,
+    ncol = 2
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  ) + 
+  labs(
+    title = "Delphinidae Observations",
+    x = "Month",
+    y = "Ocurrences"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Cephalorhynchus" = "red",
+      "Delphinus" = "blue",
+      "Feresa" = "pink",
+      "Globicephala" = "yellow",
+      "Grampus" = "purple",
+      "Lagenodelphis" = "cyan",
+      "Lagenorhynchus" = "brown",
+      "Lissodelphis" = "white",
+      "Orcaella" = "grey",
+      "Orcinus" = "black",
+      "Peponocephala" = "salmon",
+      "Pseudorca" = "lightblue",
+      "Sotalia" = "darkred",
+      "Sousa" = "green",
+      "Stenella" = "darkgreen",
+      "Steno" = "orange",
+      "Tursiops" =	"navy"
+>>>>>>> a74d3658fe516925f2c9a91a20fd379aafd5918f
     )
-)
+  ) +
+  scale_shape_manual(
+    values = c(
+      "Cephalorhynchus" = 21,
+      "Delphinus" = 22,
+      "Feresa" = 23,
+      "Globicephala" = 24,
+      "Grampus" = 25,
+      "Lagenodelphis" = 21,
+      "Lagenorhynchus" = 22,
+      "Lissodelphis" = 23,
+      "Orcaella" = 24,
+      "Orcinus" = 25,
+      "Peponocephala" = 21,
+      "Pseudorca" = 22,
+      "Sotalia" = 23,
+      "Sousa" = 24,
+      "Stenella" = 25,
+      "Steno" = 21,
+      "Tursiops" = 22
+    )
+  )
+
+
+```
+
+```{r Data mapping}
 
 ```
 
@@ -354,5 +459,11 @@ leaflet(data = Delphinidae_Loc) %>%
     stroke = FALSE,
     #clusterOptions = markerClusterOptions()
   )
+<<<<<<< HEAD
 
 ```
+=======
+```
+
+
+>>>>>>> a74d3658fe516925f2c9a91a20fd379aafd5918f
