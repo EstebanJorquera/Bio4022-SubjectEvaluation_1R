@@ -1,0 +1,19 @@
+---
+title: "Test"
+author: "Esteban Jorquera"
+date: "15/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+year_from = 2018
+year_to = "2019"
+
+data("Delphinidae_Data")
+```
+
+
+Humand wildlife observations registered `r ifelse(year_to != year_from,{paste ("from",as.numeric(year_from),"to",as.numeric(year_to))},{paste("since",as.numeric(year_to))})`*Delphinidae*  asd
+
+a for `r dplyr::count(summarise(group_by(Delphinidae_Data,speciesKey)))` species.
